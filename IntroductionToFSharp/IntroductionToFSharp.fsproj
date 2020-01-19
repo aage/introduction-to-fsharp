@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Types.fs" />
+    <Compile Include="Functions.fs" />
     <None Include="Samples.fsx" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
-  <ItemGroup />
 
 </Project>
