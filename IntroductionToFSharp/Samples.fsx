@@ -10,13 +10,17 @@
 *)
 
 // ===== Printing to console
+
 printfn "%s" "hello"
 printfn "It is the year %i" 2020
 // printfn "It is the year %i" "2020" // compile error
 printfn "%A" "hello" // use pretty printer
 printfn "%O" "world" // use object.ToString()
 
-// ===== Declare (immutable and type inferred) variables (send to interactive to figure out types)
+// ===== Declare variables
+
+    // (immutable and type inferred) variables (send to interactive to figure out types)
+
 let age = 37
 let pi = 3.14
 let name = "Aage"
@@ -29,7 +33,8 @@ let me = {age= 37; name = "Aage" } // immutable!
     // when two types have the same labels the compiler picks the last:
     // https://fsharpforfunandprofit.com/posts/records/
 
-// == aliasses
+    // Aliasses
+
 type Age = Age of int
 type Name = Name of string
 type PersonTypeSafe = {age:Age;name:Name}
@@ -42,7 +47,8 @@ type Length = Length of int
 let length = Length 200
 // let meAswell = {name=name'; age= length} // compile error
 
-// == type composition
+    // Type composition
+
 type FirstName = FirstName of string
 type LastName = LastName of string
 type FullName = FirstName * LastName
@@ -65,7 +71,7 @@ type Money =
     | Dollar of decimal
     | Euro of decimal
 
-let payMe (money:Money) =
+let payMe money = // type inferrence
     match money with // pattern matching
     | Dollar d -> printfn "Payed with dollars, amount: %A" d
     | Euro e -> printfn "Payed with euros, amount: %A" e
@@ -87,17 +93,17 @@ let numbers = [1;2;3;4;5;6;7;8;9;10]
 let numbers' = [1..10]
 numbers = numbers' // true
 
-// == Arrays -> Use for performance reasons with large sets
+    // Arrays -> Use for performance reasons with large sets
 
 let alphabet = [|'A'..'Z'|]
 
-// == Sequences (lazy) -> 'F#' equivalent for 'IEnumerable<T>'
+    // Sequences (lazy) -> 'F#' equivalent for 'IEnumerable<T>'
 
 let squares = seq { for i in 1..10 -> i * i }
 // let squares = seq { for i in 1..10 do i * i }
 squares |> Seq.iter (fun i -> printfn "%i" i)
 
-// Functions
+// ====== Functions
     
     // regular syntax
 
@@ -107,7 +113,11 @@ let add x y = x + y
 
 let add' = fun x y -> x + y
 
-    // compose functions
+    // explicitly type params
+
+let add'' (x:int, y:int) = x + y
+
+    // compose functions with '|>'
 
 type Human = {age:int}
 let peoples = [40..50] |> List.map (fun age -> {age=age})
@@ -124,3 +134,9 @@ averageAge = 45 // true
 let add1 = add 1
 let three = add1 2
 three = 3
+
+    // sentence naming
+
+let ``when I add one and one together it should be two`` () =
+    let oneAndOne = 1 + 1
+    2 = oneAndOne
