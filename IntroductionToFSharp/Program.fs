@@ -7,59 +7,54 @@ open PostOfficeFunctions
 [<EntryPoint>]
 let main argv =
 
-    // variables
+    // ====== Variables
 
-    let sender = Sender(
-                    Name "John Smith",
-                    {street = "Main street"; number = 1; city = "New York"})
+    let senderAddress = {street = "Main street"; number = 1; city = "New York"}
+    let sender = Sender(Name "John Smith", senderAddress)
 
-    let destination = Sender(
-                        Name "Jane Doe",
-                        {street = "5th Avenue"; number = 42; city = "Los Angeles"})
+    let destinationAddress = {street = "5th Avenue"; number = 42; city = "Los Angeles"}
+    let destination = Sender(Name "Jane Doe", destinationAddress)
 
-    let postOffice = PostOffice(
-                        Id (Guid.NewGuid()),
-                        {street = "Manhatten Boulevard"; number = 7; city = "New York"})
-
-    let getCode = fun () -> Guid.NewGuid() |> TrackingCode
+    let postOfficeAddress = {street = "Manhatten Boulevard"; number = 7; city = "New York"}
+    let id = Guid.NewGuid() |> Id
+    let postOffice = PostOffice(id, postOfficeAddress)
+    
+    printfn "Getting mail..."
     let r = new Random()
-    let getMailItem = fun sender destination ->
-        let random = r.Next()
-        let even = random % 2 = 0
-        if even then // package
-            let weight = Weight random // use random as weight
-            Package (sender,destination, weight)
-        else
-            Letter (sender,destination)
+    let mail =      [1..15] // get 15 pieces of mail
+                    |> List.map (float >> DateTime.Now.AddDays >> getDeliveryDate) // compose functions with '>>'
+                    |> List.map (fun date ->
+                         let code = Guid.NewGuid() |> TrackingCode
+                         let isLetter = r.Next() % 2 = 0
+                         let item = getMailItem sender destination isLetter
+                         (postOffice, code, item, date))
 
-    // create mail
-    printfn "Sending mail..."
+    printfn "Delivering mail..."
 
-    let mail = [1..10]
-               |> List.map (fun i -> DateTime.Now.AddDays(float i) |> DeliveryDate)
-               |> List.map (fun date ->
-                    let code = getCode()
-                    let item = getMailItem sender destination
-                    (postOffice, code, item, date))
-    mail |> List.map (fun m ->
-            let (office, code, mail, date) = m
-            let (DeliveryDate d) = date
-            let mailType = match mail with
-                           | Package _ -> "Package"
-                           | Letter _ -> "Letter"
-            printfn "Sending %s on %A with code %A" mailType date code
-            let result = delivery office code mail date
-            result)
-        |> List.iter (fun r ->
-                match r with
-                | Delivered (_, code) ->
-                    printfn "Item with code %A delivered" code
-                | ReturnToPostOffice (_, code) ->
-                    printfn "Item with code %A returned to post office" code
-                | ReturnToSender (_, code) ->
-                    printfn "Item with code %A returned to post office" code
-            )
+    let results =   mail
+                    |> List.map(fun del -> // monitor info printing (side effect)
+                        let (_, code, mail, date) = del
+                        let mailType = match mail with
+                                       | Package _ -> "Package"
+                                       | Letter _ -> "Letter"
+                        printfn "Sending %s on %A with code %A" mailType date code
+                        del)
+                    |> List.map (fun del -> // attempt delivery
+                        let (office, code, mail, date) = del
+                        let result = delivery office code mail date
+                        result)
 
-    printfn "Mailing done!"
+    printfn "Mail handled."
+
+    results         |> List.iter (fun result ->  // print results (side effects)
+                        match result with
+                        | Delivered (_, code) ->
+                            printfn "Item with code %A delivered" code
+                        | ReturnToPostOffice (_, code) ->
+                            printfn "Item with code %A returned to post office" code
+                        | ReturnToSender (_, code) ->
+                            printfn "Item with code %A returned to sender" code)
+
+    printfn "Mailing done. Press key to exit."
     Console.ReadKey() |> ignore
     0 // return an integer exit code
