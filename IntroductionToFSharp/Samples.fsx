@@ -29,6 +29,7 @@ let name = "Aage"
 
 type Person = { age:int; name:string } // use semi-colon for separating fields
 let me = {age= 37; name = "Aage" } // immutable!
+let nextWeek = { me with age = 38 } // update copy method
 
     // when two types have the same labels the compiler picks the last:
     // https://fsharpforfunandprofit.com/posts/records/
@@ -100,7 +101,7 @@ let alphabet = [|'A'..'Z'|]
     // Sequences (lazy) -> 'F#' equivalent for 'IEnumerable<T>'
 
 let squares = seq { for i in 1..10 -> i * i }
-// let squares = seq { for i in 1..10 do i * i }
+let squares' = seq { for i = 0 to 10 do yield i * i } // alternative
 squares |> Seq.iter (fun i -> printfn "%i" i)
 
 // ====== Functions
@@ -113,7 +114,7 @@ let add x y = x + y
 
 let add' = fun x y -> x + y
 
-    // explicitly type params
+    // explicitly type params (when type inferrence doesn't work)
 
 let add'' (x:int, y:int) = x + y
 
@@ -133,7 +134,11 @@ averageAge = 45 // true
 
 let add1 = add 1
 let three = add1 2
-three = 3
+three = 3 // true
+
+let add2 = add 2
+let add3 = add1 >> add2
+let four = add3 1
 
     // sentence naming
 
